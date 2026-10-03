@@ -31,6 +31,15 @@ io.on('connection', (socket) => {
     io.to(roomCode).emit('updatePlayers', Object.values(room.players));
   });
 
+  socket.on('updateProfile', ({ roomCode, name, avatar }) => {
+    const room = rooms[roomCode]; if (!room) return;
+    const p = room.players[socket.id]; if (!p) return;
+    if (typeof name === 'string' && name.trim()) p.name = name.trim().slice(0, 20);
+    if (typeof avatar === 'string' && avatar) p.avatar = avatar;
+    io.to(roomCode).emit('updatePlayers', Object.values(room.players));
+    io.to(roomCode).emit('roomState', snapshot(roomCode));
+  });
+
   socket.on('submitAnswer', ({ roomCode, key, value }) => {
     const room = rooms[roomCode]; if (!room) return;
     if (!room.answers[key]) room.answers[key] = {};

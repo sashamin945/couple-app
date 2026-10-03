@@ -78,7 +78,7 @@ input:focus,textarea:focus{border-color:var(--accent)}
   width:92px;height:92px;border-radius:50%;background:var(--input);
   display:flex;align-items:center;justify-content:center;font-size:42px;
   border:3px solid var(--card);box-shadow:0 0 0 2px var(--accent),var(--shadow);overflow:hidden;
-  transition:transform .2s
+  transition:transform .2s;cursor:pointer
 }
 .avatar:hover{transform:scale(1.03)}
 .avatar img{width:100%;height:100%;object-fit:cover}
@@ -89,7 +89,7 @@ input:focus,textarea:focus{border-color:var(--accent)}
   transition:transform .15s
 }
 .avatar .add:hover{transform:scale(1.1)}
-.partner .name{font-size:14px;font-weight:700;max-width:110px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.partner .name{font-size:14px;font-weight:700;max-width:110px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
 .partner .sub2{font-size:11px;color:var(--text-2);text-align:center}
 .distance{
   position:absolute;left:50%;top:34px;transform:translateX(-50%);
@@ -140,7 +140,6 @@ input:focus,textarea:focus{border-color:var(--accent)}
 .cat-red{background:linear-gradient(135deg,#3d1a1a,#241010)}
 .cat-yellow{background:linear-gradient(135deg,#3d3213,#241d08)}
 
-/* Подкатегории */
 .subs-grid{display:flex;flex-direction:column;gap:12px}
 .sub-card{
   border-radius:20px;padding:16px;background:var(--card);border:1px solid var(--border);
@@ -312,7 +311,7 @@ input:focus,textarea:focus{border-color:var(--accent)}
 
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:110;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
 .modal.active{display:flex;animation:fade .2s}
-.modal-box{background:var(--card);border-radius:22px;padding:20px;width:100%;max-width:400px;border:1px solid var(--border-2);box-shadow:var(--shadow)}
+.modal-box{background:var(--card);border-radius:22px;padding:20px;width:100%;max-width:400px;border:1px solid var(--border-2);box-shadow:var(--shadow);max-height:90vh;overflow-y:auto}
 .modal-box h3{font-size:17px;margin-bottom:14px}
 .emoji-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .emoji-opt{
@@ -322,6 +321,15 @@ input:focus,textarea:focus{border-color:var(--accent)}
 }
 .emoji-opt:hover{transform:scale(1.1)}
 .emoji-opt.selected{border-color:var(--accent)}
+.avatar-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:14px}
+.avatar-opt{
+  aspect-ratio:1;border-radius:50%;background:var(--input);border:2px solid transparent;
+  display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;
+  transition:transform .15s,border-color .2s;overflow:hidden
+}
+.avatar-opt img{width:100%;height:100%;object-fit:cover}
+.avatar-opt:hover{transform:scale(1.08)}
+.avatar-opt.selected{border-color:var(--accent)}
 .file-in{display:none}
 .file-label{
   display:block;padding:14px;border-radius:14px;background:var(--input);
@@ -337,6 +345,16 @@ input:focus,textarea:focus{border-color:var(--accent)}
   background:var(--card);border-radius:20px;border:1px dashed var(--border-2)
 }
 .empty-state .e-emoji{font-size:44px;display:block;margin-bottom:12px}
+
+.profile-preview{
+  display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:16px
+}
+.profile-preview .pv-avatar{
+  width:96px;height:96px;border-radius:50%;background:var(--input);
+  display:flex;align-items:center;justify-content:center;font-size:44px;overflow:hidden;
+  border:3px solid var(--card);box-shadow:0 0 0 2px var(--accent)
+}
+.profile-preview .pv-avatar img{width:100%;height:100%;object-fit:cover}
 </style>
 </head>
 <body>
@@ -379,7 +397,7 @@ input:focus,textarea:focus{border-color:var(--accent)}
   <div class="cat-grid" id="catGrid"></div>
 </div>
 
-<!-- SUBS (подкатегории) -->
+<!-- SUBS -->
 <div id="v-subs" class="view">
   <div class="game-top">
     <button class="icon-btn" onclick="backHome()">
@@ -393,7 +411,7 @@ input:focus,textarea:focus{border-color:var(--accent)}
   <div class="subs-grid" id="subsGrid"></div>
 </div>
 
-<!-- QUESTION LIST -->
+<!-- LIST -->
 <div id="v-list" class="view">
   <div class="game-top">
     <button class="icon-btn" onclick="backToSubs()">
@@ -456,6 +474,32 @@ input:focus,textarea:focus{border-color:var(--accent)}
   </div>
 </div>
 
+<!-- PROFILE MODAL -->
+<div class="modal" id="profileModal">
+  <div class="modal-box">
+    <h3>Мой профиль</h3>
+    <div class="profile-preview">
+      <div class="pv-avatar" id="pvAvatar">🐼</div>
+    </div>
+
+    <label>Имя</label>
+    <input id="profName" maxlength="20" placeholder="Как тебя звать?" style="margin-bottom:14px">
+
+    <label>Аватар</label>
+    <div class="avatar-grid" id="avatarGrid"></div>
+
+    <label>Или своё фото</label>
+    <input type="file" id="profFile" accept="image/*" class="file-in">
+    <label for="profFile" class="file-label" id="profFileLabel">📷 Загрузить фото</label>
+    <button class="btn ghost small" onclick="clearProfilePhoto()" id="clearPhotoBtn" style="width:100%;margin-bottom:12px;display:none">✕ Убрать фото</button>
+
+    <div class="row">
+      <button class="btn ghost small" onclick="closeProfileModal()">Отмена</button>
+      <button class="btn small" onclick="saveProfile()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
 <!-- STORY VIEWER -->
 <div class="story-view" id="storyView">
   <button class="close" onclick="closeStoryViewer()">
@@ -479,9 +523,8 @@ input:focus,textarea:focus{border-color:var(--accent)}
 
 <script>
 /* ============================================================
-   state объявляем ПЕРВЫМ делом
+   state объявляем ПЕРВЫМ
    ============================================================ */
-
 const socket = io();
 const state = {
   room: null,
@@ -489,14 +532,17 @@ const state = {
   players: [],
   stories: [],
   allAnswers: {},
-  category: null,     // catId
-  sub: null,          // subId
+  category: null,
+  sub: null,
   qIndex: null,
   question: null,
   myAnswer: null,
-  locked: false
+  locked: false,
+  // Поля для редактирования профиля
+  editAvatar: null,     // эмодзи или dataURL фото (или null если не меняем)
+  editPhoto: null       // dataURL если загружено фото
 };
-const AVATARS = ['🐱','🦊','🐼','🐯','🐨','🦁','🐸','🐧'];
+const AVATARS = ['🐼','🐱','🦊','🐯','🐨','🦁','🐸','🐧','🐶','🐰','🐻','🐹','🦄','🐙','🦉','🐺','🦝','🐹','🐷','🐸','🦋','🐢','🐠','🦜'];
 
 /* ============ THEME ============ */
 const THEME_KEY = 'cj_theme';
@@ -535,7 +581,7 @@ function cloudSVG(mood, size){
 }
 const MOOD_LABELS = ['Полностью согласны','Согласны','Нейтрально','Не согласны','Совершенно не согласны'];
 
-/* ============ QUESTION KEY ============ */
+/* ============ QUESTION HELPERS ============ */
 function qKey(catId, subId, idx){ return catId + '::' + subId + '::' + idx; }
 
 function getQuestion(catId, subId, idx){
@@ -556,6 +602,13 @@ function getQuestion(catId, subId, idx){
   if (raw.type === 'scale') return { key, type:'scale', text:raw.q };
   if (raw.type === 'neverHaveI') return { key, type:'neverHaveI', text:raw.q };
   return { key, type:'scale', text:String(raw.q || raw) };
+}
+
+/* ============ HELPERS ============ */
+function avatarHTML(av){
+  if (!av) return '🙂';
+  if (av.startsWith('data:')) return `<img src="${av}" alt="">`;
+  return av;
 }
 
 /* ============ LOGIN ============ */
@@ -674,19 +727,120 @@ function renderHome(){
 
   document.getElementById('p1').innerHTML = `
     <div class="avatar-wrap">
-      <div class="avatar">${meAv}</div>
+      <div class="avatar" onclick="openProfileModal()" title="Редактировать профиль">${avatarHTML(meAv)}</div>
       <div class="add" onclick="openStoryModal()" title="Добавить сторис">+</div>
     </div>
-    <div class="name">${esc(meName)} <span style="color:var(--text-3);font-weight:500">(ты)</span></div>
+    <div class="name" onclick="openProfileModal()">${esc(meName)} <span style="color:var(--text-3);font-weight:500">(ты)</span></div>
   `;
   document.getElementById('p2').innerHTML = other ? `
-    <div class="avatar-wrap"><div class="avatar">${other.avatar}</div></div>
+    <div class="avatar-wrap"><div class="avatar">${avatarHTML(other.avatar)}</div></div>
     <div class="name">${esc(other.name)}</div>
   ` : `
     <div class="avatar-wrap"><div class="avatar" style="opacity:.5">?</div></div>
     <div class="name" style="color:var(--text-2)">Ожидание...</div>
     <div class="sub2">Отправь ссылку партнёру</div>
   `;
+}
+
+/* ============ PROFILE ============ */
+function openProfileModal(){
+  const me = state.players.find(p=>p.id === socket.id) || state.me;
+  if (!me) return;
+  state.editAvatar = me.avatar;
+  state.editPhoto = null;
+
+  document.getElementById('profName').value = me.name || '';
+  updateProfilePreview();
+
+  // сетка эмодзи
+  document.getElementById('avatarGrid').innerHTML = AVATARS.map(a=>{
+    const isSel = (a === state.editAvatar && !state.editPhoto);
+    return `<div class="avatar-opt ${isSel?'selected':''}" data-e="${a}" onclick="pickAvatar(this,'${a}')">${a}</div>`;
+  }).join('');
+
+  document.getElementById('profFile').value = '';
+  document.getElementById('profFileLabel').classList.remove('has');
+  document.getElementById('profFileLabel').textContent = '📷 Загрузить фото';
+  document.getElementById('clearPhotoBtn').style.display = 'none';
+
+  document.getElementById('profileModal').classList.add('active');
+}
+function closeProfileModal(){
+  document.getElementById('profileModal').classList.remove('active');
+}
+function pickAvatar(el, emoji){
+  state.editAvatar = emoji;
+  state.editPhoto = null;
+  document.querySelectorAll('#avatarGrid .avatar-opt').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('profFileLabel').classList.remove('has');
+  document.getElementById('profFileLabel').textContent = '📷 Загрузить фото';
+  document.getElementById('clearPhotoBtn').style.display = 'none';
+  updateProfilePreview();
+}
+function updateProfilePreview(){
+  const pv = document.getElementById('pvAvatar');
+  pv.innerHTML = avatarHTML(state.editAvatar);
+}
+document.getElementById('profFile').addEventListener('change', (e)=>{
+  const f = e.target.files[0]; if (!f) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const max = 480;
+      let {width:w, height:h} = img;
+      if (w > max || h > max){ const k = Math.max(w,h)/max; w/=k; h/=k; }
+      const c = document.createElement('canvas'); c.width=w; c.height=h;
+      // центральный квадрат, чтобы круглый аватар не искажался
+      const size = Math.min(w,h);
+      const sx = (w-size)/2, sy = (h-size)/2;
+      c.width = size; c.height = size;
+      c.getContext('2d').drawImage(img, sx, sy, size, size, 0, 0, size, size);
+      const dataUrl = c.toDataURL('image/jpeg', 0.85);
+      state.editAvatar = dataUrl;
+      state.editPhoto = dataUrl;
+      document.querySelectorAll('#avatarGrid .avatar-opt').forEach(x=>x.classList.remove('selected'));
+      document.getElementById('profFileLabel').textContent = '✅ Фото прикреплено';
+      document.getElementById('profFileLabel').classList.add('has');
+      document.getElementById('clearPhotoBtn').style.display = 'block';
+      updateProfilePreview();
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(f);
+});
+function clearProfilePhoto(){
+  state.editPhoto = null;
+  state.editAvatar = AVATARS[0];
+  document.getElementById('profFile').value = '';
+  document.getElementById('profFileLabel').classList.remove('has');
+  document.getElementById('profFileLabel').textContent = '📷 Загрузить фото';
+  document.getElementById('clearPhotoBtn').style.display = 'none';
+  document.querySelectorAll('#avatarGrid .avatar-opt').forEach(x=>{
+    x.classList.toggle('selected', x.dataset.e === state.editAvatar);
+  });
+  updateProfilePreview();
+}
+function saveProfile(){
+  const newName = document.getElementById('profName').value.trim();
+  if (!newName) return alert('Введите имя');
+  if (!state.editAvatar) return alert('Выберите аватар');
+
+  // сохраняем в localStorage
+  localStorage.setItem('cj_name', newName);
+  localStorage.setItem('cj_avatar', state.editAvatar);
+  state.me = { name: newName, avatar: state.editAvatar };
+
+  // отправляем на сервер
+  socket.emit('updateProfile', {
+    roomCode: state.room,
+    name: newName,
+    avatar: state.editAvatar
+  });
+
+  closeProfileModal();
+  renderHome();
 }
 
 /* ============ SHARE ============ */
@@ -770,7 +924,7 @@ function openStoryViewer(id){
 }
 function closeStoryViewer(){ document.getElementById('storyView').classList.remove('active'); }
 
-/* ============ CATEGORY PROGRESS ============ */
+/* ============ PROGRESS ============ */
 function catProgress(catId){
   const cat = BANK[catId]; if (!cat) return { me:0, partner:0, total:0 };
   const meId = socket.id;
@@ -821,8 +975,6 @@ function renderCategories(){
     </div>`;
   }).join('');
 }
-
-/* ============ OPEN CATEGORY → SUBS ============ */
 function openCategory(catId){
   state.category = catId;
   state.sub = null;
@@ -848,8 +1000,6 @@ function renderSubs(){
     </div>`;
   }).join('');
 }
-
-/* ============ OPEN SUB → QUESTIONS ============ */
 function openSub(catId, subId){
   state.category = catId;
   state.sub = subId;
@@ -859,7 +1009,6 @@ function openSub(catId, subId){
   switchView('v-list');
   renderQuestionList();
 }
-
 function questionStatus(catId, subId, idx){
   const meId = socket.id;
   const partnerId = state.players.find(p=>p.id !== meId)?.id;
@@ -875,8 +1024,7 @@ function renderQuestionList(){
   const { category, sub } = state;
   const cat = BANK[category]; if (!cat) return;
   const subObj = cat.subs.find(s => s.id === sub); if (!subObj) return;
-  const list = document.getElementById('qList');
-  list.innerHTML = subObj.questions.map((_, i)=>{
+  document.getElementById('qList').innerHTML = subObj.questions.map((_, i)=>{
     const q = getQuestion(category, sub, i);
     const st = questionStatus(category, sub, i);
     const cls = st.code === 'done' ? 'done' : st.code === 'partner' ? 'partner' : st.code === 'mine' ? 'mine' : '';
@@ -887,8 +1035,6 @@ function renderQuestionList(){
     </div>`;
   }).join('');
 }
-
-/* ============ OPEN QUESTION ============ */
 function openQuestion(idx){
   state.qIndex = idx;
   state.question = getQuestion(state.category, state.sub, idx);
@@ -942,7 +1088,6 @@ function renderQuestionScreen(){
     btnDone.classList.remove('hidden');
     return;
   }
-
   if (mine !== undefined){
     area.innerHTML = `
       <div class="q-text-big">${esc(q.text)}</div>
@@ -962,12 +1107,10 @@ function renderQuestionScreen(){
     btnDone.classList.remove('hidden');
     return;
   }
-
   const partnerHint = his !== undefined
     ? `<div style="background:var(--grad-soft);border:1px solid rgba(255,107,203,.3);border-radius:16px;padding:14px;margin-bottom:20px;font-size:13px;color:var(--text-2);text-align:center">
         💜 ${esc(otherP?.name || 'Партнёр')} уже ответил(а). Твоя очередь!
       </div>` : '';
-
   if (q.type === 'scale'){
     area.innerHTML = `
       <div class="q-text-big">${esc(q.text)}</div>
@@ -1007,7 +1150,6 @@ function renderQuestionScreen(){
   btnDone.classList.add('hidden');
   btnSubmit.disabled = !state.myAnswer;
 }
-
 function visualIsMood(q, val){ return q.type === 'scale'; }
 function visualFor(q, val){
   if (val === null || val === undefined) return '—';
@@ -1025,8 +1167,6 @@ function isMatch(q, a, b){
   if (q.type === 'thisOrThat' || q.type === 'neverHaveI') return a === b;
   return null;
 }
-
-/* ============ PICK ============ */
 function pickScale(m){
   if (state.locked) return;
   state.myAnswer = m;
@@ -1073,7 +1213,6 @@ function renderStats(){
   const wrap = document.getElementById('arcWrap');
   const list = document.getElementById('statList');
   const hint = document.getElementById('arcHint');
-
   const done = [];
   for (const k in state.allAnswers){
     const a = state.allAnswers[k];
@@ -1085,7 +1224,6 @@ function renderStats(){
     list.innerHTML = `<div class="empty-state"><span class="e-emoji">📊</span>Пока нет общих ответов.<br>Ответьте вдвоём хотя бы на один вопрос.</div>`;
     return;
   }
-
   let match = 0, total = 0;
   done.forEach(({k, answers})=>{
     const p = parseKey(k);
@@ -1097,7 +1235,6 @@ function renderStats(){
     if (isMatch(q, vals[0], vals[1])) match++;
   });
   const pct = total ? Math.round(match/total*100) : 0;
-
   const R = 80, C = Math.PI * R;
   const dash = (pct/100) * C;
   wrap.innerHTML = `
@@ -1115,13 +1252,11 @@ function renderStats(){
   hint.textContent = total
     ? `Считается по вопросам со шкалой и выбором (${match} из ${total}). Открытые ответы не сравниваются.`
     : 'Пока нет ответов по шкале/выбору.';
-
   list.innerHTML = done.slice().reverse().map(({k, answers})=>{
     const p = parseKey(k);
     const q = getQuestion(p.catId, p.subId, p.idx);
     if (!q) return '';
     const players = state.players;
-
     if (q.type === 'scale'){
       const chosen = players.map(pl=>({ p: pl, v: answers[pl.id] }));
       return `<div class="stat-item">
@@ -1130,7 +1265,7 @@ function renderStats(){
           ${[1,2,3,4,5].map(m=>{
             const marks = chosen.filter(c=>Number(c.v) === m);
             return `<div class="stat-mood ${marks.length?'hit':''}">
-              <div class="markers">${marks.map(c=>`<div class="mini-avatar">${c.p.avatar}</div>`).join('')}</div>
+              <div class="markers">${marks.map(c=>`<div class="mini-avatar">${avatarHTML(c.p.avatar)}</div>`).join('')}</div>
               ${cloudSVG(m, 42)}
             </div>`;
           }).join('')}
@@ -1147,7 +1282,7 @@ function renderStats(){
             if (q.type === 'thisOrThat') visual = v === 'a' ? (q.a.e + ' ' + esc(q.a.t)) : v === 'b' ? (q.b.e + ' ' + esc(q.b.t)) : '—';
             else visual = v === 'yes' ? '😎 Да' : v === 'no' ? '🙅 Никогда' : '—';
             return `<div style="text-align:center;flex:1">
-              <div class="mini-avatar" style="margin:0 auto 6px;width:32px;height:32px;font-size:18px">${pl.avatar}</div>
+              <div class="mini-avatar" style="margin:0 auto 6px;width:32px;height:32px;font-size:18px">${avatarHTML(pl.avatar)}</div>
               <div style="font-size:13px;font-weight:600">${visual}</div>
               <div style="font-size:11px;color:var(--text-3);margin-top:4px">${esc(pl.name)}</div>
             </div>`;
@@ -1158,7 +1293,7 @@ function renderStats(){
     return `<div class="stat-item">
       <div class="stat-q">${esc(q.text)}</div>
       ${players.map(pl=>`<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px">
-        <div class="mini-avatar" style="flex:0 0 auto;width:28px;height:28px;font-size:16px">${pl.avatar}</div>
+        <div class="mini-avatar" style="flex:0 0 auto;width:28px;height:28px;font-size:16px">${avatarHTML(pl.avatar)}</div>
         <div style="flex:1;font-size:14px;line-height:1.45">
           <div style="font-size:11px;color:var(--text-3);margin-bottom:2px">${esc(pl.name)}</div>
           ${esc(answers[pl.id] || '—')}
